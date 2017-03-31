@@ -1,0 +1,12 @@
+{
+  "name": "aibot",
+  "version": "1.0.0",
+  "description": "Bot for glip",
+  "main": "build/index.js",
+  "author": "Kevin Zeng <zengfenfei@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ringcentral-ts": "^0.4.1",
+    "tslib": "^1.6.0"
+  }
+}

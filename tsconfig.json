@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"outDir": "./build",
+		"target": "es6",
+		"module": "commonjs",
+		"sourceMap": true,
+		"pretty": true,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+		"noUnusedLocals": true,
+		"importHelpers": true
+	},
+	"files": [
+		"src/index.ts"
+	],
+	"compileOnSave": true
+}
