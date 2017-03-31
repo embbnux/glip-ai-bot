@@ -1,5 +1,7 @@
+// /import RingCentral from 'ringcentral-ts';
 import glipAuth from './glip-auth';
 import Glip from './Glip';
+import * as rcOauth from './rc-oauth';
 
 main();
 
@@ -7,7 +9,9 @@ async function main() {
 	try {
 		let glip = new Glip((await glipAuth).rest);
 		glip.receiveMessage(msg => {
-			console.log("Glip message received", msg);
+			console.log("Glip message received", msg.body);
+			let gId = msg.body.groupId;
+			rcOauth.checkLogin(gId, glip);
 		});
 
 		/*let groups = await glip.getGroups();

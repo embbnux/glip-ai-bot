@@ -38,8 +38,8 @@ export default class Glip {
 		let { subscription } = this;
 		if (!subscription) {
 			subscription = new Subscription(this.rest);
-			await subscription.subscribe(['/account/~/extension/~/glip/posts']);
 			this.subscription = subscription;
+			await subscription.subscribe(['/account/~/extension/~/glip/posts']);
 		}
 		subscription.onMessage(cb);
 	}

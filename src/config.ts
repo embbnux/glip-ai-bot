@@ -18,6 +18,7 @@ export interface Config {
 		"server": string;
 		"appKey": string;
 		"appSecret": string;
+		redirectUri: string;
 	};
 }
 
