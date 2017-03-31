@@ -34,7 +34,7 @@ export default class Glip {
      eventType: 'PostAdded' } }
 	 * @param cb 
 	 */
-	async receiveMessage(cb) {
+	async receiveMessage(cb: (msg: { body: GlipMessage }) => void) {
 		let { subscription } = this;
 		if (!subscription) {
 			subscription = new Subscription(this.rest);
