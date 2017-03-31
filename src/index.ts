@@ -1,11 +1,16 @@
 import glipAuth from './glip-auth';
+import Glip from './Glip';
 
 main();
 
 async function main() {
 	try {
-		let glip = (await glipAuth).rest;
-		console.log('>>> logged in', glip)
+		let glip = new Glip((await glipAuth).rest);
+		let groups = await glip.getGroups();
+		for (let group of groups.records) {
+			let result = await glip.sendMessage(group.id, 'Test Message sent to group ' + group.id);
+			console.log('>>', result)
+		}
 	} catch (e) {
 		console.log(">>>", e)
 	}
