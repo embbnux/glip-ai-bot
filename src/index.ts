@@ -2,18 +2,14 @@
 import glipAuth from './glip-auth';
 import Glip from './Glip';
 import * as rcOauth from './rc-oauth';
+import './webserver';
 
 main();
 
 async function main() {
 	try {
 		let glip = new Glip((await glipAuth).rest);
-		glip.receiveMessage(msg => {
-			console.log("Glip message received", msg.body);
-			let gId = msg.body.groupId;
-			rcOauth.checkLogin(gId, glip);
-		});
-
+		rcOauth.setup(glip);
 		/*let groups = await glip.getGroups();
 		for (let group of groups.records) {
 			let result = await glip.sendMessage(group.id, 'Test Message sent to group ' + group.id);
