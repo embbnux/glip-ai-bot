@@ -42,6 +42,9 @@ export default class Glip {
 		let { subscription } = this;
 		if (!subscription) {
 			subscription = new Subscription(this.rest);
+			subscription.on('error', (err) => {
+				console.error('Error receiving message from glip', err);
+			});
 			this.subscription = subscription;
 			await subscription.subscribe(['/account/~/extension/~/glip/posts']);
 		}
