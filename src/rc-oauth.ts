@@ -42,15 +42,15 @@ export async function loggedIn(state: string, callbackUrl: string) {
 	try {
 		await rc.oauth(callbackUrl);
 	} catch (e) {
-		glip.sendMessage(groupId, 'Login failed:' + e);
+		await glip.sendMessage(groupId, 'Login failed:' + e);
 		return;
 	}
-	showLoggedInRc(glip, groupId, glipUserId);
+	await showLoggedInRc(glip, groupId, glipUserId);
 }
 
 async function showLoggedInRc(glip: Glip, groupId: string, glipUserId: string) {
 	let ext = await getRcExtension(glipUserId);
-	glip.sendMessage(groupId, `@${glipUserId} The RingCentral account you logged in is ${ext.name}(${ext.extensionNumber}, ${ext.contact.email})`);
+	glip.sendMessage(groupId, `@${glipUserId} The RingCentral account you logged in is ${ext.name}(${ext.extensionNumber}, ${ext.contact.email}).`);
 }
 async function getRc(creatorId: string) {
 	let rc = rcClients[creatorId];

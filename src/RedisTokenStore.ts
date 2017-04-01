@@ -18,11 +18,15 @@ export default class RedisTokenStore implements TokenStore {
 				err ? reject(err) : resolve(res);
 			});
 		});
+		if (!tokenData) {
+			throw new Error('Token not exist in redis.');
+		}
 		this.token.fromCache(JSON.parse(tokenData + ''));
 		return this.token;
 	}
 
 	save(token: Token) {
+		this.token = token;
 		this.redis.set(this.key, JSON.stringify(token), (err, res) => {
 			if (err) {
 				console.error('Fail to save rc token to redis for key ', this.key, err);
