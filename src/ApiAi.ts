@@ -1,8 +1,9 @@
 import ApiAi from 'apiai';
+import config from './config';
 
-export default class ApiAi {
-  constructor(token: string) {
-    this._ai = ApiAi(token);
+class ApiAiClient {
+  constructor() {
+    this._ai = ApiAi(config.ApiAi.token);
   }
 
   _sendMessage(text, sessionId) {
@@ -30,3 +31,5 @@ export default class ApiAi {
     }
   }
 }
+
+export default ApiAiClient;
