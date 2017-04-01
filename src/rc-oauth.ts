@@ -52,7 +52,7 @@ async function showLoggedInRc(glip: Glip, groupId: string, glipUserId: string) {
 	let ext = await getRcExtension(glipUserId);
 	glip.sendMessage(groupId, `@${glipUserId} The RingCentral account you logged in is ${ext.name}(${ext.extensionNumber}, ${ext.contact.email}).`);
 }
-async function getRc(creatorId: string) {
+export async function getRc(creatorId: string) {
 	let rc = rcClients[creatorId];
 	if (!rc) {
 		rc = new RingCentral(config.RcApp);

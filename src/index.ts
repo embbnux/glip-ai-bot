@@ -4,6 +4,7 @@ import Glip, { GlipMessage } from './Glip';
 import * as rcOauth from './rc-oauth';
 import ApiAi from './ApiAi';
 import './webserver';
+import * as sms from './sms';
 
 main();
 
@@ -63,7 +64,7 @@ function defaultActionReactor(glip: Glip, msg: GlipMessage, aiResult) {
 
 const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => any } = {
 	//help: defaultActionReactor,
-	receiveSMS: null,
+	receiveSMS: sms.receiveSms,
 	disableReceiveSMS: null,
 	sendSMS: null,
 	rcLogin: rcOauth.rcLogin,
