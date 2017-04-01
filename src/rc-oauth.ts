@@ -58,7 +58,7 @@ async function getRc(creatorId: string) {
 		rc = new RingCentral(config.RcApp);
 		rcClients[creatorId] = rc;
 		await rc.restoreToken(null, new RedisTokenStore('rc-token:glip-group:' + creatorId, redis)).catch(e => {
-			console.log('Fail to restore token from redis.' + e);
+			//console.log('Fail to restore token from redis.' + e);
 		});
 	}
 	return rc;

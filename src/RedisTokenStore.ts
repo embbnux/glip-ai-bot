@@ -31,7 +31,7 @@ export default class RedisTokenStore implements TokenStore {
 			if (err) {
 				console.error('Fail to save rc token to redis for key ', this.key, err);
 			} else {
-				console.log('Token saved to redis', res);
+				//console.log('Token saved to redis', res);
 			}
 		});
 	}
