@@ -6,8 +6,10 @@
   "author": "Kevin Zeng <zengfenfei@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@types/redis": "^0.12.36",
     "apiai": "^4.0.1",
     "express": "^4.15.2",
+    "redis": "^2.7.1",
     "ringcentral-ts": "^0.4.1",
     "tslib": "^1.6.0"
   }

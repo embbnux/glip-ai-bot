@@ -1,6 +1,6 @@
 // /import RingCentral from 'ringcentral-ts';
 import glipAuth from './glip-auth';
-import Glip from './Glip';
+import Glip, { GlipMessage } from './Glip';
 import * as rcOauth from './rc-oauth';
 import ApiAi from './ApiAi';
 import './webserver';
@@ -8,35 +8,63 @@ import './webserver';
 main();
 
 async function main() {
+	const ai = new ApiAi();
 	try {
 		const glip = new Glip((await glipAuth).rest);
-		rcOauth.setup(glip);
-		glip.receiveMessage((msg, fromSelf) => {
+		glip.receiveMessage(async (msg, fromSelf) => {
 			if (fromSelf) {
 				return;
 			}
-			let groupId = msg.groupId;
-			if (msg.text.match(/\bhelp\b/)) {
-				sendHelp(groupId, glip);
-			} else {
-				glip.sendMessage(groupId, 'Sorry, I don\'t understand you.');
+			console.log('Glip Message received', msg);
+			const aiRes = await ai.send(msg.text, msg.groupId);
+			if (!aiRes) {
+				console.error('Fail to get Ai response');
+				return;
 			}
+			const aiResult = aiRes.result;
+			console.log('>>aiResult', aiResult);
+			const action = aiResult.action;
+			let actionFn = actions[action] || defaultActionReactor;
+			actionFn(glip, msg, aiResult);
 		});
-		const ai = new ApiAi();
-		const aiText = await ai.send('hi', '123456');
-		console.log(aiText);
 	} catch (e) {
-		console.log(">>>", e)
+		console.log("Error", e)
 	}
 }
 
-function sendHelp(groupId: string, glip: Glip) {
-	let help = `
-AiBot:
-	help: Show this help;
-	Rc Login: Log into your RingCentral account;
-	Receive SMS: Show your sms here;
-	Disable SMS Notification: Stop showing sms here;
-	`;
-	glip.sendMessage(groupId, help);
+/*
+ * Sample result returned from api.ai:
+ * groupId { id: '489f1d39-b9aa-4b40-be96-51417961829d',
+  timestamp: '2017-04-01T04:28:27.295Z',
+  lang: 'en',
+  result:
+   { source: 'agent',
+     resolvedQuery: 'send sms to Kevin',
+     action: 'sendSMS',
+     actionIncomplete: false,
+     parameters: { messageText: '', userName: 'Kevin' },
+     contexts: [],
+     metadata:
+      { intentId: '5ee56a9e-9c63-43da-9980-eb118ce3cb44',
+        webhookUsed: 'false',
+        webhookForSlotFillingUsed: 'false',
+        intentName: 'send sms to Kevin: hi' },
+     fulfillment: { speech: 'Message has sent', messages: [Object] },
+     score: 0.75 },
+  status: { code: 200, errorType: 'success' },
+  sessionId: '123456' }
+
+ */
+
+
+function defaultActionReactor(glip: Glip, msg: GlipMessage, aiResult) {
+	glip.sendMessage(msg.groupId, aiResult.fulfillment.speech);
 }
+
+const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => any } = {
+	//help: defaultActionReactor,
+	receiveSMS: null,
+	disableReceiveSMS: null,
+	sendSMS: null,
+	rcLogin: null
+};

@@ -105,7 +105,7 @@ interface Group {
 
 }
 
-interface GlipMessage {
+export interface GlipMessage {
 	id: string;
 	groupId: string;
 	type: string;
