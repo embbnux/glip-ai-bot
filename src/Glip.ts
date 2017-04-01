@@ -6,9 +6,13 @@ export default class Glip {
 
 	rest: RestClient;
 	subscription: Subscription;
+	person: Person;	// Current Persion Id
 
 	constructor(rest: RestClient) {
 		this.rest = rest;
+		this.getPerson().then(p => {
+			this.person = p;
+		});
 	}
 
 	sendMessage(groupId: string, text: string): Promise<GlipMessage> {
@@ -34,7 +38,7 @@ export default class Glip {
      eventType: 'PostAdded' } }
 	 * @param cb 
 	 */
-	async receiveMessage(cb: (msg: { body: GlipMessage }) => void) {
+	async receiveMessage(cb: (msg: { body: GlipMessage }, opts: { filterSelf: boolean }) => void) {
 		let { subscription } = this;
 		if (!subscription) {
 			subscription = new Subscription(this.rest);
@@ -47,6 +51,40 @@ export default class Glip {
 	getGroups(opts?: { type, pageToken, recordCount }): Promise<PagingResult<Group>> {
 		return this.rest.get('/glip/groups', opts).then<any>(res => res.json());
 	}
+
+	getPerson(personId = '~'): Promise<Person> {
+		return this.rest.get('/glip/persons/' + personId).then<any>(res => res.json());
+	}
+}
+
+interface Person {
+	// ID of person
+	id: string;
+
+	// First name of person
+	firstName: string;
+
+	// Last name of person
+	lastName: string;
+
+	// Gender of person
+	gender: string;
+
+	// Email of user
+	email: string;
+
+	// Current location of person
+	location: string;
+
+	// ID of company person belongs to
+	companyId: string;
+
+	// Time of creation (ISO format)
+	creationTime: string;
+
+	// Time of last modification (ISO format)
+	lastModifiedTime: string;
+
 }
 
 interface Group {
