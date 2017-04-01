@@ -59,7 +59,10 @@ async function main() {
 
 
 function defaultActionReactor(glip: Glip, msg: GlipMessage, aiResult) {
-	glip.sendMessage(msg.groupId, aiResult.fulfillment.speech);
+	const text = aiResult.fulfillment.messages.map(
+		(message) => message.speech
+	).join('\n');
+	glip.sendMessage(msg.groupId, text);
 }
 
 const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => any } = {

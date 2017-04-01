@@ -5,12 +5,17 @@
   "main": "build/index.js",
   "author": "Kevin Zeng <zengfenfei@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node build/index.js"
+  },
   "dependencies": {
     "@types/redis": "^0.12.36",
     "apiai": "^4.0.1",
     "express": "^4.15.2",
     "redis": "^2.7.1",
     "ringcentral-ts": "^0.4.1",
-    "tslib": "^1.6.0"
+    "tslib": "^1.6.0",
+    "typescript": "^2.2.2"
   }
 }
