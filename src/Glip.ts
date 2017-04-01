@@ -38,14 +38,17 @@ export default class Glip {
      eventType: 'PostAdded' } }
 	 * @param cb 
 	 */
-	async receiveMessage(cb: (msg: { body: GlipMessage }, opts: { filterSelf: boolean }) => void) {
+	async receiveMessage(cb: (msg: GlipMessage, fromSelf: boolean) => void) {
 		let { subscription } = this;
 		if (!subscription) {
 			subscription = new Subscription(this.rest);
 			this.subscription = subscription;
 			await subscription.subscribe(['/account/~/extension/~/glip/posts']);
 		}
-		subscription.onMessage(cb);
+		subscription.onMessage(notification => {
+			let msg: GlipMessage = notification.body;
+			cb(msg, msg.creatorId === this.person.id);
+		});
 	}
 
 	getGroups(opts?: { type, pageToken, recordCount }): Promise<PagingResult<Group>> {
