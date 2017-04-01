@@ -15,14 +15,14 @@ async function main() {
 			if (fromSelf) {
 				return;
 			}
-			console.log('Glip Message received', msg);
+			// console.log('Glip Message received', msg);
 			const aiRes = await ai.send(msg.text, msg.groupId);
 			if (!aiRes) {
 				console.error('Fail to get Ai response');
 				return;
 			}
 			const aiResult = aiRes.result;
-			console.log('>>aiResult', aiResult);
+			// console.log('>>aiResult', aiResult);
 			const action = aiResult.action;
 			let actionFn = actions[action] || defaultActionReactor;
 			actionFn(glip, msg, aiResult);
@@ -66,5 +66,6 @@ const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => a
 	receiveSMS: null,
 	disableReceiveSMS: null,
 	sendSMS: null,
-	rcLogin: null
+	rcLogin: rcOauth.rcLogin,
+	rcLogout: null
 };
