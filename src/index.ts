@@ -5,6 +5,7 @@ import * as rcOauth from './rc-oauth';
 import ApiAi from './ApiAi';
 import './webserver';
 import * as sms from './sms';
+import getWeather from './weather';
 
 main();
 
@@ -59,9 +60,14 @@ async function main() {
 
 
 function defaultActionReactor(glip: Glip, msg: GlipMessage, aiResult) {
-	const text = aiResult.fulfillment.messages.map(
-		(message) => message.speech
-	).join('\n');
+	let text;
+	if (aiResult.fulfillment.messages) {
+		text = aiResult.fulfillment.messages.map(
+			(message) => message.speech
+		).join('\n');
+	} else {
+		text = aiResult.fulfillment.speech;
+	}
 	glip.sendMessage(msg.groupId, text);
 }
 
@@ -71,5 +77,6 @@ const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => a
 	disableReceiveSMS: null,
 	sendSMS: null,
 	rcLogin: rcOauth.rcLogin,
-	rcLogout: null
+	rcLogout: null,
+	getWeather: getWeather
 };
