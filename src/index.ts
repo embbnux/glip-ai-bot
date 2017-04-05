@@ -17,8 +17,9 @@ async function main() {
 			if (fromSelf) {
 				return;
 			}
+			const text = msg.text.replace(/<a[^>]*>/, '').replace('</a>', ' ');
 			// console.log('Glip Message received', msg);
-			const aiRes = await ai.send(msg.text, msg.groupId);
+			const aiRes = await ai.send(text, msg.groupId);
 			if (!aiRes) {
 				console.error('Fail to get Ai response');
 				return;
