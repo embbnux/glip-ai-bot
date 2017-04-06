@@ -51,7 +51,9 @@ export async function setup(glip: Glip) {
 					console.error('Get subscription id failed', err);
 					return;
 				}
-				await sub.subscription.subscribeById(subscriptionId);
+				await sub.subscription.subscribeById(subscriptionId).catch(e => {
+					checkSubcription(glipUserId, glip);
+				});
 			});
 		}
 	});
