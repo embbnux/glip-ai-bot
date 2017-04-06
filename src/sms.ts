@@ -23,12 +23,18 @@ export async function receiveSms(glip: Glip, msg: GlipMessage, aiResult) {
 }
 
 export async function disableReceiveSMS(glip: Glip, msg: GlipMessage, aiResult) {
-	let sub = smsSubscriptions[msg.creatorId];
-	if (!sub || !sub.removeGroup(msg.groupId)) {
-		glip.sendMessage(msg.groupId, 'This chat does not receive sms.');
-	} else {
-		glip.sendMessage(msg.groupId, 'Your sms wont show in this chat anymore.');
-	}
+	let glipUserId = msg.creatorId;
+	let groupId = msg.groupId;
+	let key = groupKey(glipUserId);
+	redis.srem(key, groupId, (err, remCount) => {
+		if (err) {
+			glip.sendMessage(groupId, 'Remove failed:' + err);
+		} else if (remCount < 1) {
+			glip.sendMessage(groupId, 'This chat does not receive sms.');
+		} else {
+			glip.sendMessage(groupId, 'Your sms wont show in this chat anymore.');
+		}
+	});
 }
 
 let smsSubscriptions: { [glipUserId: string]: SmsSubscriptionForGlip } = {};
@@ -58,7 +64,7 @@ class SmsSubscriptionForGlip {
 	 * @param groupId 
 	 */
 	async addGroup(groupId: string, cb) {
-		let key = 'groups-receive-sms:glip-user:' + this.ownerGlipUserId;
+		let key = this.groupKey();
 		redis.sadd(key, groupId, (err, addedCount) => {
 			if (err || addedCount != 1) {
 				cb(err, addedCount);
@@ -78,18 +84,20 @@ class SmsSubscriptionForGlip {
 		redis.set('sms-subscription:glip-user:' + this.ownerGlipUserId, this.subscription.id);
 	}
 
-	removeGroup(groupId: string) {
-		let idx = this.recipientGroups.indexOf(groupId);
-		if (idx > -1) {
-			this.recipientGroups.splice(idx, 1);
-			if (this.recipientGroups.length < 1) {
-				this.subscription.cancel();
-			}
-			return true;
-		}
-		return false;
+	removeGroup(groupId: string, cb) {
+		redis.srem(this.groupKey(), (err, remCount) => {
+			console.log('remove group', err, remCount)
+		});
 	}
 
+	groupKey() {
+		return 'groups-receive-sms:glip-user:' + this.ownerGlipUserId;
+	}
+
+}
+
+function groupKey(glipUserId: string) {
+	return 'groups-receive-sms:glip-user:' + glipUserId;
 }
 
 /* Sample sms notification:
