@@ -21,6 +21,14 @@ export async function receiveSms(glip: Glip, msg: GlipMessage, aiResult) {
 	}
 }
 
+export async function disableReceiveSMS(glip: Glip, msg: GlipMessage, aiResult) {
+	let sub = smsSubscriptions[msg.creatorId];
+	if (!sub || !sub.removeGroup(msg.groupId)) {
+		glip.sendMessage(msg.groupId, 'This chat does not receive sms.');
+	} else {
+		glip.sendMessage(msg.groupId, 'Your sms wont show in this chat anymore.');
+	}
+}
 
 let smsSubscriptions: { [glipUserId: string]: SmsSubscriptionForGlip } = {};
 
@@ -58,6 +66,19 @@ class SmsSubscriptionForGlip {
 		}
 		return true;
 	}
+
+	removeGroup(groupId: string) {
+		let idx = this.recipientGroups.indexOf(groupId);
+		if (idx > -1) {
+			this.recipientGroups.splice(idx, 1);
+			if (this.recipientGroups.length < 1) {
+				this.subscription.cancel();
+			}
+			return true;
+		}
+		return false;
+	}
+
 }
 
 /* Sample sms notification:

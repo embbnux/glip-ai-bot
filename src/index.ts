@@ -79,7 +79,7 @@ function defaultActionReactor(glip: Glip, msg: GlipMessage, aiResult) {
 const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => any } = {
 	//help: defaultActionReactor,
 	receiveSMS: sms.receiveSms,
-	disableReceiveSMS: null,
+	disableReceiveSMS: sms.disableReceiveSMS,
 	sendSMS: null,
 	rcLogin: rcOauth.rcLogin,
 	rcLogout: null,
