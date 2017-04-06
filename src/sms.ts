@@ -5,19 +5,15 @@ import redis from './redis';
 
 export async function receiveSms(glip: Glip, msg: GlipMessage, aiResult) {
 	let glipUserId = msg.creatorId;
-	let sub = smsSubscriptions[glipUserId];
-	if (!sub) {
-		let rc = await getRc(glipUserId);
-		sub = new SmsSubscriptionForGlip(rc.createSubscription(), glipUserId, glip);
-		smsSubscriptions[glipUserId] = sub;
-	}
-	sub.addGroup(msg.groupId, (e, res) => {
-		if (e) {
-			glip.sendMessage(msg.groupId, 'Enable sms notification failed:' + e);
-		} else if (res == 1) {
-			glip.sendMessage(msg.groupId, 'Future sms of your RingCentral account will be sent here.');
+	let groupId = msg.groupId;
+	let key = groupKey(glipUserId);
+	redis.sadd(key, groupId, (err, addCount) => {
+		if (err) {
+			glip.sendMessage(groupId, 'Enable sms notification failed:' + err);
+		} else if (addCount < 1) {
+			glip.sendMessage(groupId, 'Sms notification already enabled for this chat.');
 		} else {
-			glip.sendMessage(msg.groupId, 'Sms notification already enabled for this chat.');
+			glip.sendMessage(groupId, 'Future sms of your RingCentral account will be sent here.');
 		}
 	});
 }
