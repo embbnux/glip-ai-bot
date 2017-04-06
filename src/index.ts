@@ -28,7 +28,11 @@ async function main() {
 			// console.log('>>aiResult', aiResult);
 			const action = aiResult.action;
 			let actionFn = actions[action] || defaultActionReactor;
-			actionFn(glip, msg, aiResult);
+			try {
+				await actionFn(glip, msg, aiResult);
+			} catch (e) {
+				glip.sendMessage(msg.groupId, `Perform action function(${actionFn.name}) failed: ${e}. Please contact bot owner.`);
+			}
 		});
 	} catch (e) {
 		console.log("Error", e)
