@@ -13,6 +13,7 @@ async function main() {
 	const ai = new ApiAi();
 	try {
 		const glip = new Glip((await glipAuth).rest);
+		sms.setup(glip);
 		glip.receiveMessage(async (msg, fromSelf) => {
 			if (fromSelf) {
 				return;

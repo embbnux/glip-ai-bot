@@ -35,6 +35,28 @@ export async function disableReceiveSMS(glip: Glip, msg: GlipMessage, aiResult) 
 	});
 }
 
+export async function setup(glip: Glip) {
+	redis.keys('sms-subscription:glip-user:*', async (err, subscriptionKeys) => {
+		if (err) {
+			console.error('Fail to get sms subscription redis keys', err);
+			return;
+		}
+		for (let key of subscriptionKeys) {
+			let glipUserId = key.match(/sms-subscription:glip-user:(.*)$/)[1];
+			let rc = await getRc(glipUserId);
+			let sub = new SmsSubscriptionForGlip(rc.createSubscription(), glipUserId, glip);
+			smsSubscriptions[glipUserId] = sub;
+			redis.get(key, async (err, subscriptionId) => {
+				if (err) {
+					console.error('Get subscription id failed', err);
+					return;
+				}
+				await sub.subscription.subscribeById(subscriptionId);
+			});
+		}
+	});
+}
+
 async function checkSubcription(glipUserId: string, glip: Glip) {
 	let sub = smsSubscriptions[glipUserId];
 	if (!sub) {
