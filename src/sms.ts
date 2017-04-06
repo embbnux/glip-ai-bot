@@ -14,6 +14,7 @@ export async function receiveSms(glip: Glip, msg: GlipMessage, aiResult) {
 			glip.sendMessage(groupId, 'Sms notification already enabled for this chat.');
 		} else {
 			glip.sendMessage(groupId, 'Future sms of your RingCentral account will be sent here.');
+			checkSubcription(glipUserId, glip);
 		}
 	});
 }
@@ -29,15 +30,26 @@ export async function disableReceiveSMS(glip: Glip, msg: GlipMessage, aiResult) 
 			glip.sendMessage(groupId, 'This chat does not receive sms.');
 		} else {
 			glip.sendMessage(groupId, 'Your sms wont show in this chat anymore.');
+			checkSubcription(glipUserId, glip);
 		}
 	});
+}
+
+async function checkSubcription(glipUserId: string, glip: Glip) {
+	let sub = smsSubscriptions[glipUserId];
+	if (!sub) {
+		let rc = await getRc(glipUserId);
+		sub = new SmsSubscriptionForGlip(rc.createSubscription(), glipUserId, glip);
+		smsSubscriptions[glipUserId] = sub;
+	}
+	sub.checkSubscription(glipUserId);
 }
 
 let smsSubscriptions: { [glipUserId: string]: SmsSubscriptionForGlip } = {};
 
 class SmsSubscriptionForGlip {
-	//recipientGroups: string[] = [];
-	ownerGlipUserId: string;
+	// recipientGroups: string[] = [];
+	// ownerGlipUserId: string;
 
 	subscription: Subscription;
 	glip: Glip;
@@ -45,49 +57,44 @@ class SmsSubscriptionForGlip {
 	constructor(sub: Subscription, glipUserId: string, glip: Glip) {
 		this.subscription = sub;
 		this.glip = glip;
-		this.ownerGlipUserId = glipUserId;
+		let key = groupKey(glipUserId);
 		sub.onMessage((evt) => {
 			let smsEvt = evt.body;
 			let smsNotification = `Sms received for ${smsEvt.to[0].name}(${smsEvt.to[0].phoneNumber}):\n\n${smsEvt.subject}`;
-			for (let groupId of this.recipientGroups) {
-				glip.sendMessage(groupId, smsNotification);
-			}
-		});
-	}
-
-	/**
-	 * Return true if added, false if existed
-	 * @param groupId 
-	 */
-	async addGroup(groupId: string, cb) {
-		let key = this.groupKey();
-		redis.sadd(key, groupId, (err, addedCount) => {
-			if (err || addedCount != 1) {
-				cb(err, addedCount);
-				return;
-			}
-			redis.scard(key, (err, res) => {
-				cb(err, 1);
-				if (res == 1) {
-					this.subscribe();
+			redis.smembers(key, (err, groups) => {
+				if (err) {
+					console.error('Fail to get groups for sms notifications', err);
+					return;
+				}
+				for (let groupId of groups) {
+					glip.sendMessage(groupId, smsNotification);
 				}
 			});
 		});
 	}
 
-	async subscribe() {
-		await this.subscription.subscribe(['/account/~/extension/~/message-store/instant?type=SMS']);
-		redis.set('sms-subscription:glip-user:' + this.ownerGlipUserId, this.subscription.id);
-	}
-
-	removeGroup(groupId: string, cb) {
-		redis.srem(this.groupKey(), (err, remCount) => {
-			console.log('remove group', err, remCount)
+	/**
+	 * Subcribe if not exist
+	 * Cancel the subscription if no groups
+	 */
+	async checkSubscription(glipUserId: string) {
+		let subscriptionKey = 'sms-subscription:glip-user:' + glipUserId;
+		let key = groupKey(glipUserId);
+		redis.scard(key, async (err, count) => {
+			if (err) {
+				console.error('Get groups count error', err);
+			} else if (count < 1) {
+				await this.subscription.cancel();
+				redis.del(subscriptionKey);
+			} else if (!this.subscription.pubnub) {
+				await this.subscription.subscribe(['/account/~/extension/~/message-store/instant?type=SMS']);
+				redis.set(subscriptionKey, this.subscription.id, (err, res) => {
+					if (err) {
+						console.error('Fail to save subscription id to redis', err);
+					}
+				});
+			}
 		});
-	}
-
-	groupKey() {
-		return 'groups-receive-sms:glip-user:' + this.ownerGlipUserId;
 	}
 
 }
