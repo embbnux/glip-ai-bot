@@ -4,6 +4,8 @@ let app: any = express();
 
 app.get('/rc-oauth-callback', async (req, res) => {
 	let fullUrl = req.protocol + '://' + req.headers.host + req.url;
+	console.log('fullUrl oauth call back:' + fullUrl);
+	console.log('req headers:', req.headers);
 	let state: string = req.query.state;
 	if (!state || !state.match(/.+:.+/)) {
 		return res.end('Invalid state parameter.');
