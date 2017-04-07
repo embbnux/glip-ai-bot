@@ -13,6 +13,7 @@ async function main() {
 	const ai = new ApiAi();
 	try {
 		const glip = new Glip((await glipAuth).rest);
+		rcOauth.setup(glip);
 		sms.setup(glip);
 		glip.receiveMessage(async (msg, fromSelf) => {
 			if (fromSelf) {
@@ -81,7 +82,7 @@ const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => a
 	//help: defaultActionReactor,
 	receiveSMS: sms.receiveSms,
 	disableReceiveSMS: sms.disableReceiveSMS,
-	sendSMS: null,
+	sendSMS: sms.sendSms,
 	rcLogin: rcOauth.rcLogin,
 	rcLogout: rcOauth.rcLogout,
 	getWeather: getWeather

@@ -1,6 +1,6 @@
 import Subscription from 'ringcentral-ts/Subscription';
 import Glip, { GlipMessage } from './Glip';
-import { getRc } from './rc-oauth';
+import { getRc, getSMSPhoneNumbers, getRcExtension } from './rc-oauth';
 import redis from './redis';
 
 export async function receiveSms(glip: Glip, msg: GlipMessage, aiResult) {
@@ -148,6 +148,43 @@ e Bay / Carmichael / Auburn, CA' } ],
   messageStatus: 'Received' }
  */
 
-export function sendSms() {
-
+export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
+    let rc = await getRc(msg.creatorId);
+	if (!rc || !rc.rest.getToken()) {
+		glip.sendMessage(msg.groupId, 'You did not login.');
+	} else {
+		// console.log('start send');
+		const phoneNumber = aiResult.parameters['phone-number'];
+		const text = aiResult.parameters['any'];
+		if (!phoneNumber || !text || phoneNumber.length === 0 || text.length === 0) {
+			return;
+		}
+		try {
+			if (phoneNumber.length > 5) {
+				const smsPhoneNumbers = await getSMSPhoneNumbers(msg.creatorId);
+				// console.log(smsPhoneNumbers);
+				const toUsers = [{ phoneNumber: phoneNumber }];
+				const response = await rc.account().extension().sms().post({
+			      from: { phoneNumber: smsPhoneNumbers[0].phoneNumber },
+			      to: toUsers,
+			      text,
+			    });
+			    // console.log(response);
+			    glip.sendMessage(msg.groupId, `Send SMS to ${phoneNumber} success.`);
+			} else {
+				const extensionInfo = await getRcExtension(msg.creatorId);
+				const from = { extensionNumber: extensionInfo.extensionNumber };
+				const toUsers = [{ extensionNumber: phoneNumber }];
+				const response = await rc.account().extension().companyPager().post({
+					from,
+					to: toUsers,
+					text,
+				});
+				// console.log(response);
+			    glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${phoneNumber} success.`);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	}
 }

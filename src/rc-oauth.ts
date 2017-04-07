@@ -1,5 +1,6 @@
 import RingCentral from 'ringcentral-ts';
 import ExtensionInfo from 'ringcentral-ts/definitions/ExtensionInfo';
+import PhoneNumberInfo from 'ringcentral-ts/definitions/PhoneNumberInfo';
 import redis from './redis';
 import Glip, { GlipMessage } from './Glip';
 import config from './config';
@@ -8,12 +9,16 @@ import RedisTokenStore from './RedisTokenStore';
 let glip: Glip;
 let rcClients: { [glipUserId: string]: RingCentral } = {};
 let rcExtensions: { [glipUserId: string]: ExtensionInfo } = {};
+let rcSMSPhoneNumbers: { [glipUserId: string]: PhoneNumberInfo[] } = {};
 
+export function setup(g: Glip) {
+	glip = g;
+}
 /**
  * Show logged in RingCentral accout if logged in, else show login url.
- * @param glip 
- * @param msg 
- * @param aiResult 
+ * @param glip
+ * @param msg
+ * @param aiResult
  */
 export async function rcLogin(g: Glip, msg: GlipMessage, aiResult) {
 	glip = g;
@@ -39,9 +44,9 @@ export async function rcLogout(g: Glip, msg: GlipMessage, aiResult) {
 }
 
 /**
- * 
- * @param groupId 
- * @param callbackUrl 
+ *
+ * @param groupId
+ * @param callbackUrl
  */
 export async function loggedIn(state: string, callbackUrl: string) {
 	let parts = state.split(':');
@@ -74,7 +79,7 @@ export async function getRc(creatorId: string) {
 	return rc;
 }
 
-async function getRcExtension(glipUserId: string) {
+export async function getRcExtension(glipUserId: string) {
 	let ext = rcExtensions[glipUserId];
 	if (!ext) {
 		let rc = await getRc(glipUserId);
@@ -82,4 +87,22 @@ async function getRcExtension(glipUserId: string) {
 		rcExtensions[glipUserId] = ext;
 	}
 	return ext;
+}
+
+export async function getSMSPhoneNumbers(glipUserId: string) {
+	let phoneNumbers = rcSMSPhoneNumbers[glipUserId];
+	if (!phoneNumbers) {
+		try {
+			let rc = await getRc(glipUserId);
+			phoneNumbers = (await rc.account().extension().phoneNumber().list()).records;
+			phoneNumbers = phoneNumbers.filter(
+	          p => (p.features && p.features.indexOf('SmsSender') !== -1)
+	        );
+			rcSMSPhoneNumbers[glipUserId] = phoneNumbers;
+		} catch (error) {
+			phoneNumbers = [];
+		}
+
+	}
+	return phoneNumbers;
 }

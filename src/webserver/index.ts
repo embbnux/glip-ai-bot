@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as rcOauth from '../rc-oauth';
 let app: any = express();
 
-app.use(async (req, res) => {
+app.get('/rc-oauth-callback', async (req, res) => {
 	let fullUrl = req.protocol + '://' + req.headers.host + req.url;
 	try {
 		await rcOauth.loggedIn(req.query.state, fullUrl);
