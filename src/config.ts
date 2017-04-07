@@ -23,7 +23,7 @@ export interface Config {
 	};
 }
 
-let dataDir = './data/';
+let dataDir = process.env.DATA_DIR || './data/';
 let config: Config = JSON.parse(readFileSync(dataDir + 'config.json').toString());
 
 config.glipApp.tokenCacheFile = path.join(dataDir, config.glipApp.tokenCacheFile);

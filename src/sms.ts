@@ -149,7 +149,7 @@ e Bay / Carmichael / Auburn, CA' } ],
  */
 
 export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
-    let rc = await getRc(msg.creatorId);
+	let rc = await getRc(msg.creatorId);
 	if (!rc || !rc.rest.getToken()) {
 		glip.sendMessage(msg.groupId, `Sorry, You need to login before send sms with bot.`);
 		rcLogin(glip, msg, aiResult);
@@ -191,7 +191,7 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 					text,
 			    });
 			    console.log(response);
-			    glip.sendMessage(msg.groupId, `Send SMS to ${phoneNumber} success.`);
+			    glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${phoneNumber} success.`);
 			} else {
 				const extensionInfo = await getRcExtension(msg.creatorId);
 				const from = { extensionNumber: extensionInfo.extensionNumber };
