@@ -49,13 +49,20 @@ export async function rcLogout(g: Glip, msg: GlipMessage, aiResult) {
  * @param groupId
  * @param callbackUrl
  */
-export async function loggedIn(state: string, callbackUrl: string) {
+export async function loggedIn(query) {
+	let { state, code, error_description, error } = query;
+	if (!state || !state.match(/.+:.+/)) {
+		throw new Error('Invalid state parameter.');
+	}
+	if (!code) {
+		throw new Error('No auth code, ' + error + ', ' + error_description);
+	}
 	let parts = state.split(':');
 	let glipUserId = parts[0];
 	let groupId = parts[1];
 	let rc = await getRc(glipUserId);
 	try {
-		await rc.oauth(callbackUrl);
+		await rc.oauth(code, config.RcApp.redirectUri);
 	} catch (e) {
 		await glip.sendMessage(groupId, 'Login failed:' + e);
 		throw e;
