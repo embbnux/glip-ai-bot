@@ -128,8 +128,8 @@ balanced-match@^0.4.1:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-0.4.2.tgz#cb3f3e3c732dc0f01ee70b403f302e61d7709838"
 
 brace-expansion@^1.0.0:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.6.tgz#7197d7eaa9b87e648390ea61fc66c84427420df9"
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.7.tgz#3effc3c50e000531fb720eaff80f0ae8ef23cf59"
   dependencies:
     balanced-match "^0.4.1"
     concat-map "0.0.1"
@@ -138,7 +138,7 @@ breakable@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/breakable/-/breakable-1.0.0.tgz#784a797915a38ead27bad456b5572cb4bbaa78c1"
 
-buffer-shims@^1.0.0:
+buffer-shims@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/buffer-shims/-/buffer-shims-1.0.0.tgz#9978ce317388c649ad8793028c3477ef044a8b51"
 
@@ -231,13 +231,13 @@ data-uri-to-buffer@0:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/data-uri-to-buffer/-/data-uri-to-buffer-0.0.4.tgz#46e13ab9da8e309745c8d01ce547213ebdb2fe3f"
 
-debug@2, debug@2.6.3, debug@^2.2.0, debug@^2.6.0:
+debug@2, debug@2.6.3, debug@^2.2.0:
   version "2.6.3"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.3.tgz#0f7eb8c30965ec08c72accfa0130c8b79984141d"
   dependencies:
     ms "0.7.2"
 
-debug@2.6.1:
+debug@2.6.1, debug@^2.6.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.1.tgz#79855090ba2c4e3115cc7d8769491d58f0491351"
   dependencies:
@@ -799,8 +799,8 @@ proxy-agent@2:
     socks-proxy-agent "2"
 
 pubnub@^4.4.4:
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/pubnub/-/pubnub-4.7.0.tgz#6fd4610ec0ff3510335fcbb3be41f3c5d3d63f4e"
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/pubnub/-/pubnub-4.8.0.tgz#033c7202faba1f765233b036ecafa3084ec36f23"
   dependencies:
     agentkeepalive "^3.1.0"
     superagent "^2.3.0"
@@ -829,15 +829,15 @@ readable-stream@1.1.x:
     string_decoder "~0.10.x"
 
 readable-stream@2, readable-stream@^2.0.5:
-  version "2.2.6"
-  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.2.6.tgz#8b43aed76e71483938d12a8d46c6cf1a00b1f816"
+  version "2.2.8"
+  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.2.8.tgz#ad28b686f3554c73d39bc32347fa058356624705"
   dependencies:
-    buffer-shims "^1.0.0"
+    buffer-shims "~1.0.0"
     core-util-is "~1.0.0"
     inherits "~2.0.1"
     isarray "~1.0.0"
     process-nextick-args "~1.0.6"
-    string_decoder "~0.10.x"
+    string_decoder "~1.0.0"
     util-deprecate "~1.0.1"
 
 recast@0.10.33:
@@ -904,9 +904,9 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
-ringcentral-ts@^0.4.1:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/ringcentral-ts/-/ringcentral-ts-0.4.2.tgz#a9ffefcacdc53315f10aec4e39c6b4b73914bb7e"
+ringcentral-ts@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/ringcentral-ts/-/ringcentral-ts-0.4.3.tgz#07ce477067c7a3438ac0d865aec157ddddaf3cab"
   dependencies:
     "@types/chai" "^3.4.35"
     "@types/mocha" "^2.2.39"
@@ -919,11 +919,7 @@ ringcentral-ts@^0.4.1:
     pubnub "^4.4.4"
     tslib "^1.6.0"
 
-semver@^5.0.1:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
-
-semver@~5.0.1:
+semver@^5.0.1, semver@~5.0.1:
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.0.3.tgz#77466de589cd5d3c95f138aa78bc569a3cb5d27a"
 
@@ -1016,6 +1012,12 @@ stream-to@~0.2.0:
 string_decoder@~0.10.x:
   version "0.10.31"
   resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-0.10.31.tgz#62e203bc41766c6c28c9fc84301dab1c5310fa94"
+
+string_decoder@~1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-1.0.0.tgz#f06f41157b664d86069f84bdbdc9b0d8ab281667"
+  dependencies:
+    buffer-shims "~1.0.0"
 
 stringmap@~0.2.2:
   version "0.2.2"
