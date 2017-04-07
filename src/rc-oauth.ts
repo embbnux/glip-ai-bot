@@ -58,7 +58,7 @@ export async function loggedIn(state: string, callbackUrl: string) {
 		await rc.oauth(callbackUrl);
 	} catch (e) {
 		await glip.sendMessage(groupId, 'Login failed:' + e);
-		return;
+		throw e;
 	}
 	await showLoggedInRc(glip, groupId, glipUserId);
 }
@@ -107,8 +107,8 @@ export async function getSMSPhoneNumbers(glipUserId: string) {
 			let rc = await getRc(glipUserId);
 			phoneNumbers = (await rc.account().extension().phoneNumber().list()).records;
 			phoneNumbers = phoneNumbers.filter(
-	          p => (p.features && p.features.indexOf('SmsSender') !== -1)
-	        );
+				p => (p.features && p.features.indexOf('SmsSender') !== -1)
+			);
 			rcSMSPhoneNumbers[glipUserId] = phoneNumbers;
 		} catch (error) {
 			phoneNumbers = [];
