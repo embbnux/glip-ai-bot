@@ -147,6 +147,21 @@ e Bay / Carmichael / Auburn, CA' } ],
   subject: 'test sms context',
   messageStatus: 'Received' }
  */
+const cleanRegex = /[^\d*+#]/g;
+const plusRegex = /\+/g;
+const extensionDelimiter = /[*#]/g;
+
+function cleanNumber(phoneNumber: string) {
+  const cleaned = phoneNumber.replace(cleanRegex, '');
+  const hasPlus = cleaned[0] === '+';
+  const output = cleaned.replace(plusRegex, '')
+    .split(extensionDelimiter)
+    .slice(0, 2)
+    .join('*');
+  return hasPlus ?
+    `+${output}` :
+    output;
+}
 
 export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 	let rc = await getRc(msg.creatorId);
@@ -185,6 +200,7 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 			glip.sendMessage(msg.groupId, `Sorry, I do not get the message text.`);
 			return;
 		}
+		phoneNumber = cleanNumber(phoneNumber);
 		try {
 			if (phoneNumber.length > 5) {
 				const smsPhoneNumbers = await getSMSPhoneNumbers(msg.creatorId);
