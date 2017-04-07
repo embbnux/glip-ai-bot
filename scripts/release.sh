@@ -1,8 +1,8 @@
 #!/bin/bash
 
 workingBranch=$(git rev-parse --abbrev-ref HEAD)
-echo Your branch:$workingBranch
-git checkout heroku
+git fetch heroku
+git checkout heroku/master
 git merge $workingBranch --no-edit
-git push heroku heroku:master
+git push heroku HEAD:master
 git checkout $workingBranch
