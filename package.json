@@ -10,9 +10,11 @@
     "start": "npm run build && node build/index.js"
   },
   "dependencies": {
+    "@google-cloud/speech": "^0.8.0",
     "@types/redis": "^0.12.36",
     "apiai": "^4.0.1",
     "express": "^4.15.2",
+    "fluent-ffmpeg": "^2.1.0",
     "redis": "^2.7.1",
     "ringcentral-ts": "^0.4.1",
     "tslib": "^1.6.0",

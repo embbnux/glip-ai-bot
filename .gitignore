@@ -1,3 +1,6 @@
 node_modules/
 build/
 data/
+*.mp3
+*.flac
+*.wav

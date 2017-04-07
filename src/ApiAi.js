@@ -30,6 +30,31 @@ class ApiAiClient {
 			return null;
 		}
 	}
+
+	_sendVoice(voiceBuffer, sessionId) {
+		return new Promise((resolve, reject) => {
+			const request = this._ai.voiceRequest({ sessionId });
+			request.on('response', (response) => {
+				resolve(response);
+			});
+
+			request.on('error', (error) => {
+				reject(error);
+			});
+			request.write(voiceBuffer);
+			request.end();
+		});
+	}
+
+	async sendVoice(voiceBuffer, sessionId) {
+		try {
+			const response = await this._sendVoice(voiceBuffer, sessionId);
+			return response;
+		} catch (e) {
+			console.log(e);
+			return null;
+		}
+	}
 }
 
 export default ApiAiClient;
