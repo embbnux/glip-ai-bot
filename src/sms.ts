@@ -149,7 +149,7 @@ e Bay / Carmichael / Auburn, CA' } ],
  */
 
 export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
-    let rc = await getRc(msg.creatorId);
+	let rc = await getRc(msg.creatorId);
 	if (!rc || !rc.rest.getToken()) {
 		glip.sendMessage(msg.groupId, 'You did not login.');
 	} else {
@@ -164,24 +164,24 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 				const smsPhoneNumbers = await getSMSPhoneNumbers(msg.creatorId);
 				// console.log(smsPhoneNumbers);
 				const toUsers = [{ phoneNumber: phoneNumber }];
-				const response = await rc.account().extension().sms().post({
-			      from: { phoneNumber: smsPhoneNumbers[0].phoneNumber },
-			      to: toUsers,
-			      text,
-			    });
-			    // console.log(response);
-			    glip.sendMessage(msg.groupId, `Send SMS to ${phoneNumber} success.`);
+				await rc.account().extension().sms().post({
+					from: { phoneNumber: smsPhoneNumbers[0].phoneNumber },
+					to: toUsers,
+					text,
+				});
+				// console.log(response);
+				glip.sendMessage(msg.groupId, `Send SMS to ${phoneNumber} success.`);
 			} else {
 				const extensionInfo = await getRcExtension(msg.creatorId);
 				const from = { extensionNumber: extensionInfo.extensionNumber };
 				const toUsers = [{ extensionNumber: phoneNumber }];
-				const response = await rc.account().extension().companyPager().post({
+				await rc.account().extension().companyPager().post({
 					from,
 					to: toUsers,
 					text,
 				});
 				// console.log(response);
-			    glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${phoneNumber} success.`);
+				glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${phoneNumber} success.`);
 			}
 		} catch (error) {
 			console.log(error);
