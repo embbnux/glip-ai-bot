@@ -1,5 +1,6 @@
 // parse config
 import * as path from 'path';
+import { readFileSync } from 'fs';
 
 export interface Config {
 	glipApp: {
@@ -22,7 +23,8 @@ export interface Config {
 	};
 }
 
-let config: Config = require('../data/config.json');
+let dataDir = './data/';
+let config: Config = JSON.parse(readFileSync(dataDir + 'config.json').toString());
 
-config.glipApp.tokenCacheFile = path.resolve(__dirname, '../data/', config.glipApp.tokenCacheFile);
+config.glipApp.tokenCacheFile = path.join(dataDir, config.glipApp.tokenCacheFile);
 export default config;
