@@ -177,7 +177,12 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 		}
 		// console.log('start send');
 		const text = aiResult.parameters['any'];
-		if (!phoneNumber || !text || phoneNumber.length === 0 || text.length === 0) {
+		if (!phoneNumber || phoneNumber.length === 0 ) {
+			glip.sendMessage(msg.groupId, `Sorry, I do not know the phone number.`);
+			return;
+		}
+		if (!text || text.length === 0) {
+			glip.sendMessage(msg.groupId, `Sorry, I do not get the message text.`);
 			return;
 		}
 		try {
