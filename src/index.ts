@@ -20,14 +20,14 @@ async function main() {
 				return;
 			}
 			const text = msg.text.replace(/<a[^>]*>/, '').replace('</a>', ' ');
-			// console.log('Glip Message received', msg);
+			console.log('Glip Message received', msg);
 			const aiRes = await ai.send(text, msg.groupId);
 			if (!aiRes) {
 				console.error('Fail to get Ai response');
 				return;
 			}
 			const aiResult = aiRes.result;
-			// console.log('>>aiResult', aiResult);
+			console.log('>>aiResult', aiResult);
 			const action = aiResult.action;
 			let actionFn = actions[action] || defaultActionReactor;
 			try {

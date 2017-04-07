@@ -9,6 +9,7 @@ import RedisTokenStore from './RedisTokenStore';
 let glip: Glip;
 let rcClients: { [glipUserId: string]: RingCentral } = {};
 let rcExtensions: { [glipUserId: string]: ExtensionInfo } = {};
+let rcExtensionNumbers: { [glipUserId: string]: ExtensionInfo[] } = {};
 let rcSMSPhoneNumbers: { [glipUserId: string]: PhoneNumberInfo[] } = {};
 
 export function setup(g: Glip) {
@@ -87,6 +88,16 @@ export async function getRcExtension(glipUserId: string) {
 		rcExtensions[glipUserId] = ext;
 	}
 	return ext;
+}
+
+export async function getRcExtensionList(glipUserId: string) {
+	let extList = rcExtensionNumbers[glipUserId];
+	if (!extList) {
+		let rc = await getRc(glipUserId);
+		extList = (await rc.account().extension().list()).records;
+		rcExtensionNumbers[glipUserId] = extList;
+	}
+	return extList;
 }
 
 export async function getSMSPhoneNumbers(glipUserId: string) {

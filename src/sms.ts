@@ -1,6 +1,6 @@
 import Subscription from 'ringcentral-ts/Subscription';
 import Glip, { GlipMessage } from './Glip';
-import { getRc, getSMSPhoneNumbers, getRcExtension } from './rc-oauth';
+import { getRc, rcLogin, getSMSPhoneNumbers, getRcExtension, getRcExtensionList } from './rc-oauth';
 import redis from './redis';
 
 export async function receiveSms(glip: Glip, msg: GlipMessage, aiResult) {
@@ -151,10 +151,31 @@ e Bay / Carmichael / Auburn, CA' } ],
 export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
     let rc = await getRc(msg.creatorId);
 	if (!rc || !rc.rest.getToken()) {
-		glip.sendMessage(msg.groupId, 'You did not login.');
+		glip.sendMessage(msg.groupId, `Sorry, You need to login before send sms with bot.`);
+		rcLogin(glip, msg, aiResult);
 	} else {
+		let phoneNumber = aiResult.parameters['phone-number'];
+		let userName = aiResult.parameters['userName'];
+		if (!phoneNumber || phoneNumber.length === 0) {
+			if (userName && userName.length > 0) {
+				const extensionNumberlist = await getRcExtensionList(msg.creatorId);
+				const toUser = extensionNumberlist.find((extensionNumber) => {
+					if (extensionNumber.name === userName) {
+						return true;
+					}
+					if (extensionNumber.contact.firstName === userName) {
+						return true;
+					}
+				});
+				if (toUser) {
+					phoneNumber = toUser.extensionNumber
+				} else {
+					glip.sendMessage(msg.groupId, `Sorry, I do not know ${userName}'s phone number.`);
+					return;
+				}
+			}
+		}
 		// console.log('start send');
-		const phoneNumber = aiResult.parameters['phone-number'];
 		const text = aiResult.parameters['any'];
 		if (!phoneNumber || !text || phoneNumber.length === 0 || text.length === 0) {
 			return;
@@ -165,25 +186,29 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 				// console.log(smsPhoneNumbers);
 				const toUsers = [{ phoneNumber: phoneNumber }];
 				const response = await rc.account().extension().sms().post({
-			      from: { phoneNumber: smsPhoneNumbers[0].phoneNumber },
-			      to: toUsers,
-			      text,
+					from: { phoneNumber: smsPhoneNumbers[0].phoneNumber },
+					to: toUsers,
+					text,
 			    });
-			    // console.log(response);
+			    console.log(response);
 			    glip.sendMessage(msg.groupId, `Send SMS to ${phoneNumber} success.`);
 			} else {
 				const extensionInfo = await getRcExtension(msg.creatorId);
 				const from = { extensionNumber: extensionInfo.extensionNumber };
+				if (!userName) {
+					userName = extensionInfo.name;
+				}
 				const toUsers = [{ extensionNumber: phoneNumber }];
 				const response = await rc.account().extension().companyPager().post({
 					from,
 					to: toUsers,
 					text,
 				});
-				// console.log(response);
-			    glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${phoneNumber} success.`);
+				console.log(response);
+			    glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${userName}(${phoneNumber}) success.`);
 			}
 		} catch (error) {
+			glip.sendMessage(msg.groupId, `Sorry, something wrong happen when send sms.`);
 			console.log(error);
 		}
 	}
