@@ -28,6 +28,15 @@ export async function rcLogin(g: Glip, msg: GlipMessage, aiResult) {
 	}
 }
 
+export async function rcLogout(g: Glip, msg: GlipMessage, aiResult) {
+	let rc = rcClients[msg.creatorId];
+	if (!rc || !rc.rest.getToken()) {
+		g.sendMessage(msg.groupId, 'You did login.');
+	} else {
+		await rc.logout();
+		g.sendMessage(msg.groupId, 'Logout success.');
+	}
+}
 
 /**
  * 
@@ -52,6 +61,7 @@ async function showLoggedInRc(glip: Glip, groupId: string, glipUserId: string) {
 	let ext = await getRcExtension(glipUserId);
 	glip.sendMessage(groupId, `@${glipUserId} The RingCentral account you logged in is ${ext.name}(${ext.extensionNumber}, ${ext.contact.email}).`);
 }
+
 export async function getRc(creatorId: string) {
 	let rc = rcClients[creatorId];
 	if (!rc) {

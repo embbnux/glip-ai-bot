@@ -48,6 +48,11 @@ export default class RedisTokenStore implements TokenStore {
      * Should handle error inside the method
      */
 	clear(): void {
-
+		this.token.accessToken = null;
+		this.redis.del(this.key, (err, res) => {
+			if (err) {
+				console.error('Fail to delete token in redis.');
+			}
+		});
 	}
 }

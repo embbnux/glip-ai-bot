@@ -83,6 +83,6 @@ const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => a
 	disableReceiveSMS: sms.disableReceiveSMS,
 	sendSMS: null,
 	rcLogin: rcOauth.rcLogin,
-	rcLogout: null,
+	rcLogout: rcOauth.rcLogout,
 	getWeather: getWeather
 };
