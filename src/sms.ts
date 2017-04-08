@@ -104,7 +104,8 @@ e Bay / Carmichael / Auburn, CA' } ],
  */
 		sub.onMessage((evt) => {
 			let smsEvt = evt.body;
-			let smsNotification = `*Sms received from ${smsEvt.from.phoneNumber} to ${smsEvt.to[0].name}(${smsEvt.to[0].phoneNumber})*:\n\n> ${smsEvt.subject}`;
+			let smsContent = smsEvt.subject.split('\n').map(line => '\n> ' + (line || ' ')).join('');
+			let smsNotification = `*Sms received from ${smsEvt.from.phoneNumber} to ${smsEvt.to[0].name}(${smsEvt.to[0].phoneNumber})*:\n${smsContent}`;
 			redis.smembers(key, (err, groups) => {
 				if (err) {
 					console.error('Fail to get groups for sms notifications', err);
