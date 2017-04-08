@@ -82,9 +82,29 @@ class SmsSubscriptionForGlip {
 		this.subscription = sub;
 		this.glip = glip;
 		let key = groupKey(glipUserId);
+		/* Sample sms notification:
+ * { id: '2835129004',
+  to:
+   [ { phoneNumber: '+19167582086',
+       name: 'Kevin Zeng',
+       location: 'El Dorado Hills / Lincoln / Roseville / Walnut Grove / West Sacramento / Citrus Heights / Antelope / Folsom / Orangevale
+/ Rancho Cordova / Rio Linda / Rocklin / Clarksburg / Fair Oaks / Loomis / Newcastle / North Highlands / North Sacramento / Mather / Granit
+e Bay / Carmichael / Auburn, CA' } ],
+  from: { phoneNumber: '+13213042353', location: 'Winter Park, FL' },
+  type: 'SMS',
+  creationTime: '2017-04-01T09:02:40.698Z',
+  lastModifiedTime: '2017-04-01T09:02:40.698Z',
+  readStatus: 'Unread',
+  priority: 'Normal',
+  attachments: [ { id: '2835129004', type: 'Text', contentType: 'text/plain' } ],
+  direction: 'Inbound',
+  availability: 'Alive',
+  subject: 'test sms context',
+  messageStatus: 'Received' }
+ */
 		sub.onMessage((evt) => {
 			let smsEvt = evt.body;
-			let smsNotification = `Sms received for ${smsEvt.to[0].name}(${smsEvt.to[0].phoneNumber}):\n\n${smsEvt.subject}`;
+			let smsNotification = `Sms received from ${smsEvt.from.phoneNumber} to ${smsEvt.to[0].name}(${smsEvt.to[0].phoneNumber}):\n\n${smsEvt.subject}`;
 			redis.smembers(key, (err, groups) => {
 				if (err) {
 					console.error('Fail to get groups for sms notifications', err);
@@ -127,40 +147,20 @@ function groupKey(glipUserId: string) {
 	return 'groups-receive-sms:glip-user:' + glipUserId;
 }
 
-/* Sample sms notification:
- * { id: '2835129004',
-  to:
-   [ { phoneNumber: '+19167582086',
-       name: 'Kevin Zeng',
-       location: 'El Dorado Hills / Lincoln / Roseville / Walnut Grove / West Sacramento / Citrus Heights / Antelope / Folsom / Orangevale
-/ Rancho Cordova / Rio Linda / Rocklin / Clarksburg / Fair Oaks / Loomis / Newcastle / North Highlands / North Sacramento / Mather / Granit
-e Bay / Carmichael / Auburn, CA' } ],
-  from: { phoneNumber: '+13213042353', location: 'Winter Park, FL' },
-  type: 'SMS',
-  creationTime: '2017-04-01T09:02:40.698Z',
-  lastModifiedTime: '2017-04-01T09:02:40.698Z',
-  readStatus: 'Unread',
-  priority: 'Normal',
-  attachments: [ { id: '2835129004', type: 'Text', contentType: 'text/plain' } ],
-  direction: 'Inbound',
-  availability: 'Alive',
-  subject: 'test sms context',
-  messageStatus: 'Received' }
- */
 const cleanRegex = /[^\d*+#]/g;
 const plusRegex = /\+/g;
 const extensionDelimiter = /[*#]/g;
 
 function cleanNumber(phoneNumber: string) {
-  const cleaned = phoneNumber.replace(cleanRegex, '');
-  const hasPlus = cleaned[0] === '+';
-  const output = cleaned.replace(plusRegex, '')
-    .split(extensionDelimiter)
-    .slice(0, 2)
-    .join('*');
-  return hasPlus ?
-    `+${output}` :
-    output;
+	const cleaned = phoneNumber.replace(cleanRegex, '');
+	const hasPlus = cleaned[0] === '+';
+	const output = cleaned.replace(plusRegex, '')
+		.split(extensionDelimiter)
+		.slice(0, 2)
+		.join('*');
+	return hasPlus ?
+		`+${output}` :
+		output;
 }
 
 export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
@@ -192,7 +192,7 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 		}
 		// console.log('start send');
 		const text = aiResult.parameters['any'];
-		if (!phoneNumber || phoneNumber.length === 0 ) {
+		if (!phoneNumber || phoneNumber.length === 0) {
 			glip.sendMessage(msg.groupId, `Sorry, I do not know the phone number.`);
 			return;
 		}
@@ -210,9 +210,9 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 					from: { phoneNumber: smsPhoneNumbers[0].phoneNumber },
 					to: toUsers,
 					text,
-			    });
-			    console.log(response);
-			    glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${phoneNumber} success.`);
+				});
+				console.log(response);
+				glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${phoneNumber} success.`);
 			} else {
 				const extensionInfo = await getRcExtension(msg.creatorId);
 				const from = { extensionNumber: extensionInfo.extensionNumber };
@@ -226,7 +226,7 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 					text,
 				});
 				console.log(response);
-			    glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${userName}(${phoneNumber}) success.`);
+				glip.sendMessage(msg.groupId, `Send SMS(${text}) to ${userName}(${phoneNumber}) success.`);
 			}
 		} catch (error) {
 			glip.sendMessage(msg.groupId, `Sorry, something wrong happen when send sms.`);
