@@ -1,6 +1,6 @@
 import Subscription from 'ringcentral-ts/Subscription';
 import Glip, { GlipMessage } from './Glip';
-import { getRc, rcLogin, getSMSPhoneNumbers, getRcExtension, getRcExtensionList } from './rc-oauth';
+import { getRc, rcLogin, getSMSPhoneNumbers, getRcExtension, searchContacts } from './rc-oauth';
 import redis from './redis';
 
 export async function receiveSms(glip: Glip, msg: GlipMessage, aiResult) {
@@ -174,17 +174,14 @@ export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
 		let userName = aiResult.parameters['userName'];
 		if (!phoneNumber || phoneNumber.length === 0) {
 			if (userName && userName.length > 0) {
-				const extensionNumberlist = await getRcExtensionList(msg.creatorId);
-				const toUser = extensionNumberlist.find((extensionNumber) => {
-					if (extensionNumber.name === userName) {
-						return true;
-					}
-					if (extensionNumber.contact.firstName === userName) {
-						return true;
-					}
-				});
+				let toUser;
+				const contacts = await searchContacts(msg.creatorId, userName);
+				toUser = contacts.find((contact) => contact.name === userName);
+				if (!toUser) {
+					toUser = contacts[0];
+				}
 				if (toUser) {
-					phoneNumber = toUser.extensionNumber
+					phoneNumber = toUser.phoneNumber;
 				} else {
 					glip.sendMessage(msg.groupId, `Sorry, I do not know ${userName}'s phone number.`);
 					return;
