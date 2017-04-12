@@ -84,3 +84,9 @@ example of config.json:
 	}
 }
 ```
+
+### start server
+
+```
+npm start
+```
