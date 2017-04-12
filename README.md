@@ -1,6 +1,6 @@
 # Glip AI BOT
 
-This is a AI Assistant Bot for Glip, use API.AI and RingCentral API
+This is an AI Assistant Bot for Glip, using API.AI and RingCentral API
 
 ## Demo
 

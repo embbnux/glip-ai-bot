@@ -7,40 +7,6 @@ import './webserver';
 import * as sms from './sms';
 import getWeather from './weather';
 
-main();
-
-async function main() {
-	const ai = new ApiAi();
-	try {
-		const glip = new Glip((await glipAuth).rest);
-		rcOauth.setup(glip);
-		sms.setup(glip);
-		glip.receiveMessage(async (msg, fromSelf) => {
-			if (fromSelf) {
-				return;
-			}
-			const text = msg.text.replace(/<a[^>]*>/, '').replace('</a>', ' ');
-			console.log('Glip Message received', msg);
-			const aiRes = await ai.send(text, msg.groupId);
-			if (!aiRes) {
-				console.error('Fail to get Ai response');
-				return;
-			}
-			const aiResult = aiRes.result;
-			console.log('>>aiResult', aiResult);
-			const action = aiResult.action;
-			let actionFn = actions[action] || defaultActionReactor;
-			try {
-				await actionFn(glip, msg, aiResult);
-			} catch (e) {
-				glip.sendMessage(msg.groupId, `Perform action function(${actionFn.name}) failed: ${e}. Please contact bot owner.`);
-			}
-		});
-	} catch (e) {
-		console.log("Error", e)
-	}
-}
-
 /*
  * Sample result returned from api.ai:
  * groupId { id: '489f1d39-b9aa-4b40-be96-51417961829d',
@@ -87,3 +53,37 @@ const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => a
 	rcLogout: rcOauth.rcLogout,
 	getWeather: getWeather
 };
+
+async function main() {
+	const ai = new ApiAi();
+	try {
+		const glip = new Glip((await glipAuth).rest);
+		rcOauth.setup(glip);
+		sms.setup(glip);
+		glip.receiveMessage(async (msg, fromSelf) => {
+			if (fromSelf) {
+				return;
+			}
+			const text = msg.text.replace(/<a[^>]*>/, '').replace('</a>', ' ');
+			console.log('>>GlipMessage received', msg);
+			const aiRes = await ai.send(text, msg.groupId);
+			if (!aiRes) {
+				console.error('Fail to get Ai response');
+				return;
+			}
+			const aiResult = aiRes.result;
+			console.log('>>aiResult', aiResult);
+			const action = aiResult.action;
+			let actionFn = actions[action] || defaultActionReactor;
+			try {
+				await actionFn(glip, msg, aiResult);
+			} catch (e) {
+				glip.sendMessage(msg.groupId, `Perform action function(${actionFn.name}) failed: ${e}. Please contact bot owner.`);
+			}
+		});
+	} catch (e) {
+		console.log("Error", e)
+	}
+}
+
+main();
