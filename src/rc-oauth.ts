@@ -1,6 +1,7 @@
 import RingCentral from 'ringcentral-ts';
 import ExtensionInfo from 'ringcentral-ts/definitions/ExtensionInfo';
 import PhoneNumberInfo from 'ringcentral-ts/definitions/PhoneNumberInfo';
+
 import redis from './redis';
 import Glip, { GlipMessage } from './Glip';
 import config from './config';
@@ -10,7 +11,7 @@ let glip: Glip;
 let rcClients: { [glipUserId: string]: RingCentral } = {};
 let rcExtensions: { [glipUserId: string]: ExtensionInfo } = {};
 let rcExtensionNumbers: { [glipUserId: string]: ExtensionInfo[] } = {};
-let rcSMSPhoneNumbers: { [glipUserId: string]: PhoneNumberInfo[] } = {};
+let rcPhoneNumbers: { [glipUserId: string]: PhoneNumberInfo[] } = {};
 
 export function setup(g: Glip) {
 	glip = g;
@@ -97,30 +98,88 @@ export async function getRcExtension(glipUserId: string) {
 	return ext;
 }
 
+async function fetchPagingList(fetchPath: any, page = 1) {
+	const response = await fetchPath.list({
+		perPage: 100,
+		page,
+	});
+	const paging = response.paging;
+	let records = response.records;
+	if (paging.totalPages > paging.page) {
+		records = records.concat(await fetchPagingList(fetchPath, paging.page + 1));
+	}
+	return records;
+}
+
 export async function getRcExtensionList(glipUserId: string) {
 	let extList = rcExtensionNumbers[glipUserId];
 	if (!extList) {
-		let rc = await getRc(glipUserId);
-		extList = (await rc.account().extension().list()).records;
-		rcExtensionNumbers[glipUserId] = extList;
+		try {
+			let rc = await getRc(glipUserId);
+			extList = await fetchPagingList(rc.account().extension());
+			rcExtensionNumbers[glipUserId] = extList;
+		} catch (error) {
+			console.log(error);
+			extList = [];
+		}
 	}
 	return extList;
 }
 
-export async function getSMSPhoneNumbers(glipUserId: string) {
-	let phoneNumbers = rcSMSPhoneNumbers[glipUserId];
+export async function searchContacts(glipUserId: string, userName: string) {
+	let contacts = [];
+	const extensionNumbers = await getRcExtensionList(glipUserId);
+	contacts = extensionNumbers.filter((extension) => {
+		if (extension.name === userName) {
+			return true;
+		}
+		if (extension.contact.firstName === userName) {
+			return true;
+		}
+		return false;
+	}).map((extension) => ({
+		name: extension.name,
+		firstName: extension.contact.firstName,
+		lastName: extension.contact.lastName,
+		phoneNumber: extension.extensionNumber,
+	}));
+	try {
+		const rc = await getRc(glipUserId);
+		const response = await rc.account().extension().addressBook().contact().list({
+			startsWith: userName,
+		});
+		const searchResult = response.records.map((record) => ({
+			name: `${record.firstName} ${record.lastName}`,
+			firstName: record.firstName,
+			lastName: record.lastName,
+			phoneNumber: record.mobilePhone,
+		}));
+		contacts = contacts.concat(searchResult);
+	} catch (error) {
+		console.log(error);
+	}
+
+	return contacts;
+};
+
+export async function getPhoneNumbers(glipUserId: string) {
+	let phoneNumbers = rcPhoneNumbers[glipUserId];
 	if (!phoneNumbers) {
 		try {
 			let rc = await getRc(glipUserId);
-			phoneNumbers = (await rc.account().extension().phoneNumber().list()).records;
-			phoneNumbers = phoneNumbers.filter(
-				p => (p.features && p.features.indexOf('SmsSender') !== -1)
-			);
-			rcSMSPhoneNumbers[glipUserId] = phoneNumbers;
+			phoneNumbers = await fetchPagingList(rc.account().extension().phoneNumber());
+			rcPhoneNumbers[glipUserId] = phoneNumbers;
 		} catch (error) {
 			phoneNumbers = [];
 		}
-
 	}
+	return phoneNumbers;
+}
+
+export async function getSMSPhoneNumbers(glipUserId: string) {
+	let phoneNumbers = await getPhoneNumbers(glipUserId);
+	phoneNumbers = phoneNumbers.filter(
+		p => (p.features && p.features.indexOf('SmsSender') !== -1)
+	);
 	return phoneNumbers;
 }
