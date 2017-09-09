@@ -5,14 +5,13 @@ export default class RedisTokenStore implements TokenStore {
 
 	redis: RedisClient;
 	key: string;
-	token = new Token();
 
 	constructor(key: string, redis: RedisClient) {
 		this.redis = redis;
 		this.key = key;
 	}
 
-	async restore() {
+	async get() {
 		let tokenData = await new Promise((resolve, reject) => {
 			this.redis.get(this.key, (err, res) => {
 				err ? reject(err) : resolve(res);
@@ -21,38 +20,35 @@ export default class RedisTokenStore implements TokenStore {
 		if (!tokenData) {
 			throw new Error('Token not exist in redis.');
 		}
-		this.token.fromCache(JSON.parse(tokenData + ''));
-		return this.token;
+		const t = new Token();
+		t.fromCache(JSON.parse(tokenData + ''));
+		return t;
 	}
 
-	save(token: Token) {
-		this.token = token;
-		this.redis.set(this.key, JSON.stringify(token), (err, res) => {
-			if (err) {
-				console.error('Fail to save rc token to redis for key ', this.key, err);
-			} else {
-				//console.log('Token saved to redis', res);
-			}
+	save(token: Token): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.redis.set(this.key, JSON.stringify(token), (err, res) => {
+				if (err) {
+					reject('Fail to save rc token to redis for key ' + this.key + '.' + err);
+				} else {
+					resolve();
+				}
+			});
 		});
 	}
 
     /**
-     * Will be called every time making an API call. Should sync method
-     */
-	get(): Token {
-		if (this.token.accessToken) {
-			return this.token;
-		}
-	}
-    /**
      * Should handle error inside the method
      */
-	clear(): void {
-		this.token.accessToken = null;
-		this.redis.del(this.key, (err, res) => {
-			if (err) {
-				console.error('Fail to delete token in redis.');
-			}
+	clear() {
+		return new Promise<void>((resolve, reject) => {
+			this.redis.del(this.key, (err, res) => {
+				if (err) {
+					reject('Fail to delete token in redis.' + err);
+				} else {
+					resolve();
+				}
+			});
 		});
 	}
 }

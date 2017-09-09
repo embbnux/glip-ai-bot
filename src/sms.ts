@@ -43,7 +43,7 @@ export async function setup(glip: Glip) {
 		}
 		for (let key of subscriptionKeys) {
 			let glipUserId = key.match(/sms-subscription:glip-user:(.*)$/)[1];
-			let rc = await getRc(glipUserId);
+			let rc = getRc(glipUserId);
 			let sub = new SmsSubscriptionForGlip(rc.createSubscription(), glipUserId, glip);
 			smsSubscriptions[glipUserId] = sub;
 			redis.get(key, async (err, subscriptionId) => {
@@ -51,7 +51,8 @@ export async function setup(glip: Glip) {
 					console.error('Get subscription id failed', err);
 					return;
 				}
-				await sub.subscription.subscribeById(subscriptionId).catch(e => {
+				sub.subscription.id = subscriptionId
+				await sub.subscription.subscribe().catch(e => {
 					checkSubcription(glipUserId, glip);
 				});
 			});
@@ -62,7 +63,7 @@ export async function setup(glip: Glip) {
 async function checkSubcription(glipUserId: string, glip: Glip) {
 	let sub = smsSubscriptions[glipUserId];
 	if (!sub) {
-		let rc = await getRc(glipUserId);
+		let rc = getRc(glipUserId);
 		sub = new SmsSubscriptionForGlip(rc.createSubscription(), glipUserId, glip);
 		smsSubscriptions[glipUserId] = sub;
 	}
@@ -165,8 +166,8 @@ function cleanNumber(phoneNumber: string) {
 }
 
 export async function sendSms(glip: Glip, msg: GlipMessage, aiResult) {
-	let rc = await getRc(msg.creatorId);
-	if (!rc || !rc.rest.getToken()) {
+	let rc = getRc(msg.creatorId);
+	if (!rc || !rc.getToken()) {
 		glip.sendMessage(msg.groupId, `Sorry, You need to login before send sms with bot.`);
 		rcLogin(glip, msg, aiResult);
 	} else {

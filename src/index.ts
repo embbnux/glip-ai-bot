@@ -57,7 +57,7 @@ const actions: { [action: string]: (glip: Glip, msg: GlipMessage, aiResult) => a
 async function main() {
 	const ai = new ApiAi();
 	try {
-		const glip = new Glip((await glipAuth).rest);
+		const glip = new Glip((await glipAuth));
 		rcOauth.setup(glip);
 		sms.setup(glip);
 		glip.receiveMessage(async (msg, fromSelf) => {

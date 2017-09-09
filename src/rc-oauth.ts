@@ -25,19 +25,19 @@ export function setup(g: Glip) {
 export async function rcLogin(g: Glip, msg: GlipMessage, aiResult) {
 	glip = g;
 
-	let rc = await getRc(msg.creatorId);
-	let token = rc.rest.getToken();
-	if (token) {
+	let rc = getRc(msg.creatorId);
+	try {
+		await rc.getToken();
 		await showLoggedInRc(glip, msg.groupId, msg.creatorId);
-	} else {
+	} catch (e) {
 		glip.sendMessage(msg.groupId, `Please log into RingCentral at \
-[here](${rc.oauthUrl(config.RcApp.redirectUri, { state: msg.creatorId + ':' + msg.groupId, force: true })})`);
+		[here](${rc.oauthUrl(config.RcApp.redirectUri, { state: msg.creatorId + ':' + msg.groupId, force: true })})`);
 	}
 }
 
 export async function rcLogout(g: Glip, msg: GlipMessage, aiResult) {
 	let rc = rcClients[msg.creatorId];
-	if (!rc || !rc.rest.getToken()) {
+	if (!rc || !rc.getToken()) {
 		g.sendMessage(msg.groupId, 'You did login.');
 	} else {
 		await rc.logout();
@@ -61,7 +61,7 @@ export async function loggedIn(query) {
 	let parts = state.split(':');
 	let glipUserId = parts[0];
 	let groupId = parts[1];
-	let rc = await getRc(glipUserId);
+	let rc = getRc(glipUserId);
 	try {
 		await rc.oauth(code, config.RcApp.redirectUri);
 	} catch (e) {
@@ -76,14 +76,12 @@ async function showLoggedInRc(glip: Glip, groupId: string, glipUserId: string) {
 	glip.sendMessage(groupId, `@${glipUserId} The RingCentral account you logged in is ${ext.name}(${ext.extensionNumber}, ${ext.contact.email}).`);
 }
 
-export async function getRc(creatorId: string) {
+export function getRc(creatorId: string) {
 	let rc = rcClients[creatorId];
 	if (!rc) {
 		rc = new RingCentral(config.RcApp);
+		rc.tokenStore = new RedisTokenStore('rc-token:glip-user:' + creatorId, redis);
 		rcClients[creatorId] = rc;
-		await rc.restoreToken(null, new RedisTokenStore('rc-token:glip-user:' + creatorId, redis)).catch(e => {
-			//console.log('Fail to restore token from redis.' + e);
-		});
 	}
 	return rc;
 }
@@ -91,7 +89,7 @@ export async function getRc(creatorId: string) {
 export async function getRcExtension(glipUserId: string) {
 	let ext = rcExtensions[glipUserId];
 	if (!ext) {
-		let rc = await getRc(glipUserId);
+		let rc = getRc(glipUserId);
 		ext = await rc.account().extension().get();
 		rcExtensions[glipUserId] = ext;
 	}
@@ -115,7 +113,7 @@ export async function getRcExtensionList(glipUserId: string) {
 	let extList = rcExtensionNumbers[glipUserId];
 	if (!extList) {
 		try {
-			let rc = await getRc(glipUserId);
+			let rc = getRc(glipUserId);
 			extList = await fetchPagingList(rc.account().extension());
 			rcExtensionNumbers[glipUserId] = extList;
 		} catch (error) {
@@ -144,7 +142,7 @@ export async function searchContacts(glipUserId: string, userName: string) {
 		phoneNumber: extension.extensionNumber,
 	}));
 	try {
-		const rc = await getRc(glipUserId);
+		const rc = getRc(glipUserId);
 		const response = await rc.account().extension().addressBook().contact().list({
 			startsWith: userName,
 		});
@@ -166,7 +164,7 @@ export async function getPhoneNumbers(glipUserId: string) {
 	let phoneNumbers = rcPhoneNumbers[glipUserId];
 	if (!phoneNumbers) {
 		try {
-			let rc = await getRc(glipUserId);
+			let rc = getRc(glipUserId);
 			phoneNumbers = await fetchPagingList(rc.account().extension().phoneNumber());
 			rcPhoneNumbers[glipUserId] = phoneNumbers;
 		} catch (error) {

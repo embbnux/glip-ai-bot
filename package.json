@@ -11,11 +11,11 @@
 		"postinstall": "tsc"
 	},
 	"dependencies": {
-		"@types/redis": "^0.12.36",
+		"@types/redis": "^2.6.0",
 		"apiai": "^4.0.1",
 		"express": "^4.15.2",
 		"redis": "^2.7.1",
-		"ringcentral-ts": "^0.4.3",
+		"ringcentral-ts": "^0.9.1",
 		"tslib": "^1.6.0",
 		"typescript": "^2.2.2",
 		"urllib": "^2.21.2"
