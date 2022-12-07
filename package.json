@@ -13,7 +13,7 @@
 	"dependencies": {
 		"@types/redis": "^2.6.0",
 		"apiai": "^4.0.1",
-		"express": "^4.15.2",
+		"express": "^4.17.3",
 		"redis": "^2.7.1",
 		"ringcentral-ts": "^0.9.1",
 		"tslib": "^1.6.0",
